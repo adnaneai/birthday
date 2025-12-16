@@ -7,4 +7,6 @@ abstract class BirthdayRepository {
   Future<void> deleteBirthday(String id);
   Future<void> scheduleNotification(BirthdayEntity birthday);
   Future<void> cancelNotification(String id);
+  Stream<List<BirthdayEntity>> birthdaysStream();
+
 }

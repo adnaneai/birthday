@@ -6,16 +6,21 @@ import '../models/birthday_model.dart';
 import '../../core/utils/notification_utils.dart';
 import 'package:uuid/uuid.dart';
 
+// AJOUT: Nouvel import
+import '../datasources/birthday_data_source.dart';
+
 class BirthdayRepositoryImpl implements BirthdayRepository {
-  final BirthdayLocalDataSource localDataSource;
+  // MODIF: Changer le type de localDataSource à BirthdayDataSource
+  final BirthdayDataSource dataSource;
   final Uuid _uuid = const Uuid();
 
-  BirthdayRepositoryImpl({required this.localDataSource});
+  // MODIF: Changer le nom du paramètre
+  BirthdayRepositoryImpl({required this.dataSource});
 
   @override
   Future<List<BirthdayEntity>> getBirthdays() async {
     try {
-      final models = await localDataSource.getBirthdays();
+      final models = await dataSource.getBirthdays(); // MODIF: dataSource au lieu de localDataSource
       return models.map(BirthdayMapper.modelToEntity).toList();
     } catch (e) {
       rethrow;
@@ -39,10 +44,10 @@ class BirthdayRepositoryImpl implements BirthdayRepository {
         updatedAt: now,
       );
 
-      await localDataSource.addBirthday(model);
+      await dataSource.addBirthday(model); // MODIF: dataSource au lieu de localDataSource
       final createdEntity = BirthdayMapper.modelToEntity(model);
 
-      // Programmer la notification si activée
+      // Programmer la notification si activée (uniquement pour mobile)
       if (createdEntity.notificationsEnabled) {
         await scheduleNotification(createdEntity);
       }
@@ -70,9 +75,9 @@ class BirthdayRepositoryImpl implements BirthdayRepository {
         updatedAt: DateTime.now(),
       );
 
-      await localDataSource.updateBirthday(updatedModel);
+      await dataSource.updateBirthday(updatedModel); // MODIF: dataSource au lieu de localDataSource
 
-      // Mettre à jour la notification
+      // Mettre à jour la notification (uniquement pour mobile)
       await cancelNotification(entity.id);
       if (entity.notificationsEnabled) {
         await scheduleNotification(entity);
@@ -85,8 +90,9 @@ class BirthdayRepositoryImpl implements BirthdayRepository {
   @override
   Future<void> deleteBirthday(String id) async {
     try {
+      // Annuler la notification (uniquement pour mobile)
       await cancelNotification(id);
-      await localDataSource.deleteBirthday(id);
+      await dataSource.deleteBirthday(id); // MODIF: dataSource au lieu de localDataSource
     } catch (e) {
       rethrow;
     }
@@ -132,5 +138,13 @@ class BirthdayRepositoryImpl implements BirthdayRepository {
     }
 
     return nextBirthday;
+  }
+
+  // AJOUT: Nouvelle méthode pour le streaming (requise par l'interface)
+  @override
+  Stream<List<BirthdayEntity>> birthdaysStream() {
+    return dataSource.birthdaysStream().map((models) {
+      return models.map(BirthdayMapper.modelToEntity).toList();
+    });
   }
 }

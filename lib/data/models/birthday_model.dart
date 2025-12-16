@@ -47,7 +47,7 @@ class BirthdayModel {
     required this.updatedAt,
   });
 
-  // Optionnel: Supprimez les méthodes toJson/fromJson si vous n'en avez pas besoin
+  // Méthode existante - NE PAS MODIFIER
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -63,7 +63,7 @@ class BirthdayModel {
     };
   }
 
-  // MODIF: Accepter Map<dynamic, dynamic> pour éviter l'erreur de type
+  // Méthode existante - NE PAS MODIFIER
   static BirthdayModel fromJson(dynamic json) {
     Map<String, dynamic> jsonMap;
 
@@ -84,6 +84,53 @@ class BirthdayModel {
       notificationsEnabled: jsonMap['notificationsEnabled'] as bool? ?? true,
       createdAt: DateTime.parse(jsonMap['createdAt'] as String),
       updatedAt: DateTime.parse(jsonMap['updatedAt'] as String),
+    );
+  }
+
+  // AJOUT: Méthode factory pour créer depuis un Map<String, dynamic> (pour Firebase)
+  factory BirthdayModel.fromFirebaseJson(Map<String, dynamic> json) {
+    return BirthdayModel(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      birthDate: DateTime.parse(json['birthDate']),
+      relationship: json['relationship'],
+      phone: json['phone'],
+      email: json['email'],
+      notes: json['notes'],
+      notificationsEnabled: json['notificationsEnabled'] ?? true,
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : DateTime.now(),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
+          : DateTime.now(),
+    );
+  }
+
+  // AJOUT: Méthode pour copier l'objet avec de nouvelles valeurs
+  BirthdayModel copyWith({
+    String? id,
+    String? name,
+    DateTime? birthDate,
+    String? relationship,
+    String? phone,
+    String? email,
+    String? notes,
+    bool? notificationsEnabled,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return BirthdayModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      birthDate: birthDate ?? this.birthDate,
+      relationship: relationship ?? this.relationship,
+      phone: phone ?? this.phone,
+      email: email ?? this.email,
+      notes: notes ?? this.notes,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }

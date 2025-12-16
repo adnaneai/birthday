@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // AJOUT: Import Firebase
 import '../../core/themes/colors.dart';
 import '../../core/utils/validators.dart';
 
@@ -15,22 +16,66 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  String? _errorMessage; // AJOUT: Pour afficher les erreurs Firebase
 
-  void _login() {
+  // AJOUT: Méthode de connexion avec Firebase
+  Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
+        _errorMessage = null;
       });
 
-      // Simuler une connexion
-      Future.delayed(const Duration(seconds: 2), () {
+      try {
+        print('[LoginPage] Tentative de connexion avec Firebase...');
+
+        // Utiliser Firebase Auth au lieu d'une simulation
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+
+        print('[LoginPage] ✅ Connexion Firebase réussie');
+
+        // IMPORTANT: NE PAS FAIRE DE NAVIGATION MANUELLE ICI
+        // Le StreamBuilder dans main.dart gérera la redirection automatiquement
+
+      } on FirebaseAuthException catch (e) {
+        print('[LoginPage] ❌ Erreur Firebase: ${e.code}');
+
+        // Traduire les codes d'erreur
+        setState(() {
+          _errorMessage = _getErrorMessage(e.code);
+        });
+
+      } catch (e) {
+        print('[LoginPage] ❌ Erreur inattendue: $e');
+        setState(() {
+          _errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
+        });
+      } finally {
         setState(() {
           _isLoading = false;
         });
+      }
+    }
+  }
 
-        // Naviguer vers la page d'accueil
-        Navigator.pushReplacementNamed(context, '/');
-      });
+  // AJOUT: Traduction des erreurs Firebase
+  String _getErrorMessage(String code) {
+    switch (code) {
+      case 'user-not-found':
+        return 'Aucun utilisateur trouvé avec cet email';
+      case 'wrong-password':
+        return 'Mot de passe incorrect';
+      case 'invalid-email':
+        return 'Email invalide';
+      case 'user-disabled':
+        return 'Ce compte a été désactivé';
+      case 'too-many-requests':
+        return 'Trop de tentatives. Veuillez réessayer plus tard';
+      default:
+        return 'Erreur de connexion';
     }
   }
 
@@ -85,6 +130,32 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 48),
+
+              // AJOUT: Affichage des erreurs
+              if (_errorMessage != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error, color: Colors.red),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _errorMessage!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
               Form(
                 key: _formKey,
                 child: Column(
@@ -150,6 +221,7 @@ class _LoginPageState extends State<LoginPage> {
                     TextButton(
                       onPressed: () {
                         // Naviguer vers la page d'inscription
+                        print('Créer un compte cliqué');
                       },
                       child: const Text('Créer un compte'),
                     ),
