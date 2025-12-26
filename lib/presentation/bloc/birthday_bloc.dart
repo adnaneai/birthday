@@ -1,6 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:equatable/equatable.dart';
-import '../../../domain/entities/birthday_entity.dart';
 import '../../../domain/usecases/get_birthdays_usecase.dart';
 import '../../../domain/usecases/add_birthday_usecase.dart';
 import '../../../domain/usecases/delete_birthday_usecase.dart';
@@ -91,9 +89,6 @@ class BirthdayBloc extends Bloc<BirthdayEvent, BirthdayState> {
       Emitter<BirthdayState> emit,
       ) async {
     try {
-      // Implémenter la logique de toggle des notifications
-      // Cette méthode devrait récupérer l'anniversaire, le mettre à jour
-      // et programmer/annuler la notification
       emit(BirthdayLoaded(birthdays: [])); // Placeholder
     } catch (e) {
       emit(BirthdayError(message: 'Erreur lors du toggle: $e'));

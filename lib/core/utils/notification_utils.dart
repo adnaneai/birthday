@@ -78,6 +78,7 @@ class NotificationUtils {
     );
   }
 
+
   static Future<void> cancelNotification(int id) async {
     await flutterLocalNotificationsPlugin.cancel(id);
   }
